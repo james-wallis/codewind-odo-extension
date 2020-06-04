@@ -14,6 +14,8 @@
 'use strict';
 
 const { exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 const os = require('os');
 const fs = require('fs');
 
@@ -23,17 +25,25 @@ const MASTER_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/templates/ma
 const RECONCILED_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/templates/index.json';
 const JSON_FILE_URL = 'file://' + RECONCILED_INDEX_JSON_FILE;
 const ODO_CATALOG_LIST_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo catalog list components -o json';
+const ODO_SET_EXPERIMENTAL_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo preference set experimental true -f';
 
 
 module.exports = {
     getRepositories: async function() {
+        // Enable ODO experimental
+        try {
+            const output = await execAsync(ODO_SET_EXPERIMENTAL_COMMAND);
+            console.log('*** odo pref output ', output);
+        } catch(err) {
+            console.log('*** odo pref err ', err);
+        }
         return new Promise((resolve, reject) => {
 
             // Read master-index.json of currently defined templates for OpenShift
             fs.readFile(MASTER_INDEX_JSON_FILE, 'utf8', function (err, data) {
                 if (err)
                     return reject(err);
-        
+
                 const masterjson = JSON.parse(data);
 
                 // Run odo command to get list of catalog components available for cluster, then compare with mater index.json

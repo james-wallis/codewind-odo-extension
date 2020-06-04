@@ -25,12 +25,17 @@ shift 1
 function odoCreate() {
 	echo "- Creating odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
 	$ODO_CLI preference set -f UpdateNotification false |& tee -a $ODO_DEBUG_LOG
-	$ODO_CLI create $COMPONENT_TYPE $COMPONENT_NAME |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
-    if [ $? -eq 0 ]; then
-		echo "- Successfully created odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+
+	if [ -f "./devfile.yaml" ]; then
+		echo "- devfile.yaml already exists, skipping create step for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
 	else
-		echo "- Failed to create odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
-		exit 3
+		$ODO_CLI create $COMPONENT_TYPE $COMPONENT_NAME |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+    if [ $? -eq 0 ]; then
+			echo "- Successfully created odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+		else
+			echo "- Failed to create odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+			exit 3
+		fi
 	fi
 }
 
@@ -46,13 +51,25 @@ function odoPush() {
 }
 
 function odoUrl() {
-	echo "- Creating url for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
-	$ODO_CLI url create $COMPONENT_NAME --port 8080 |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+	# Check URL has not already been created
+	kubectl get route $COMPONENT_NAME
 	if [ $? -eq 0 ]; then
-		echo "- Successfully created url for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+		echo "- url already exists - skipping url creation for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
 	else
-		echo "- Failed to create url for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
-		exit 3
+		echo "- Creating url for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+		$ODO_CLI url create $COMPONENT_NAME |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+		if [ $? -eq 0 ]; then
+			echo "- Successfully created url for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+		else
+			echo "- odo component $COMPONENT_NAME contains multiple ports - defaulting to 8080" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+			$ODO_CLI url create $COMPONENT_NAME --port 8080 |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+			if [ $? -eq 0 ]; then
+				echo "- Successfully created url (port 8080) for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+			else
+				echo "- Failed to create url for odo component: $COMPONENT_NAME" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+				exit 3
+			fi
+		fi
 	fi
 }
 
@@ -69,17 +86,13 @@ function odoLog() {
 
 function odoDelete() {
     echo "- Deleting odo component: $COMPONENT_NAME" |& tee -a $ODO_DEBUG_LOG
-    if [ $($ODO_CLI list | awk '{print $2}' | tail -n +2 | grep $COMPONENT_NAME) == "$COMPONENT_NAME" ]; then
-        $ODO_CLI delete $COMPONENT_NAME --all -f |& tee -a $ODO_DEBUG_LOG
-	    if [ $? -eq 0 ]; then
-		    echo "- Successfully deleted odo component: $COMPONENT_NAME" |& tee -a $ODO_DEBUG_LOG
-	    else
-		    echo "- Failed to delete odo component: $COMPONENT_NAME" |& tee -a $ODO_DEBUG_LOG
-		    exit 3
-	    fi
-    else
-        echo "- The odo component $COMPONENT_NAME did not exist" |& tee -a $ODO_DEBUG_LOG
-    fi
+		$ODO_CLI delete $COMPONENT_NAME -f |& tee -a $ODO_DEBUG_LOG
+		if [ $? -eq 0 ]; then
+			echo "- Successfully deleted odo component: $COMPONENT_NAME" |& tee -a $ODO_DEBUG_LOG
+		else
+			echo "- Failed to delete odo component: $COMPONENT_NAME" |& tee -a $ODO_DEBUG_LOG
+			exit 3
+		fi
 }
 
 if [ $COMMAND == "create" ]; then
