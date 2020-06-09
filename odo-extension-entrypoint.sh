@@ -11,7 +11,7 @@
 ###################################################################################
 
 # Define general variables
-ODO_EXTENSION_DIR=/codewind-workspace/.extensions/codewind-odo-extension
+ODO_EXTENSION_DIR=/codewind-workspace/.extensions/codewind-odo-extension-devfile
 
 ROOT=$1
 PROJECT_ID=$2
