@@ -1,34 +1,26 @@
 [
-     {
-        "displayName": "OpenShift Node.js",
-        "description": "OpenShift Node.js sample application",
+    {
+        "displayName": "OpenShift Devfiles NodeJS Express Web Application",
+        "description": "Stack with NodeJS 10",
         "language": "nodejs",
-        "projectType": "odo",
-        "projectStyle": "OpenShift",
-        "location": "https://github.com/sclorg/nodejs-ex"
+        "projectType": "odo-devfile",
+        "projectStyle": "OpenShift Devfiles",
+        "location": "https://github.com/odo-devfiles/nodejs-ex"
     },
     {
-        "displayName": "OpenShift Java",
-        "description": "OpenShift Java sample application",
-        "language": "codewind-odo-openjdk18",
-        "projectType": "odo",
-        "projectStyle": "OpenShift",
-        "location": "https://github.com/spring-projects/spring-petclinic"
+        "displayName": "OpenShift Devfiles Open Liberty",
+        "description": "Open Liberty microservice in Java",
+        "language": "java-openliberty",
+        "projectType": "odo-devfile",
+        "projectStyle": "OpenShift Devfiles",
+        "location": "https://github.com/odo-devfiles/openliberty-ex"
     },
     {
-        "displayName": "OpenShift Python",
-        "description": "OpenShift Python sample application",
-        "language": "python",
-        "projectType": "odo",
-        "projectStyle": "OpenShift",
-        "location": "https://github.com/sclorg/django-ex"
-    },
-    {
-        "displayName": "OpenShift Perl",
-        "description": "OpenShift Perl sample application",
-        "language": "perl",
-        "projectType": "odo",
-        "projectStyle": "OpenShift",
-        "location": "https://github.com/sclorg/dancer-ex"
+        "displayName": "OpenShift Devfiles Spring Boot®",
+        "description": "Spring Boot® using Java",
+        "language": "java-spring-boot",
+        "projectType": "odo-devfile",
+        "projectStyle": "OpenShift Devfiles",
+        "location": "https://github.com/odo-devfiles/springboot-ex"
     }
 ]
