@@ -55,8 +55,7 @@ module.exports = {
         const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
         const masterjson = JSON.parse(data);
 
-        // Loop through current list of templates in master index.json and add any language
-        // that in component list returned by odo command
+        // Loop through current list of templates in master index.json
         // note: the master index.json is assumed to use same keywords for 'language' as odo uses for component 'name'
         const projectTypes = masterjson.map(({ language, description }) => ({
             projectType: 'odo',
