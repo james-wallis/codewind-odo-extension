@@ -35,20 +35,12 @@ function getPodName() {
 
 function getURL() {
     local URL
-    # URL=$($ODO_CLI url list | tail -n 1 | awk '{print $3}')
     URL=$(kubectl get routes $COMPONENT_NAME -o jsonpath="{.spec.host}")
-    # exitCode=1
-    # until [ "$exitCode" -eq 0 ]; do
-    #     URL=$(kubectl get routes $COMPONENT_NAME -o jsonpath="{.spec.host}") && break
-    #     exitCode=$?
-    #     sleep 1
-    # done
     echo http://$URL
 }
 
 function getPort() {
     local PORT
-    # PORT=$($ODO_CLI url list | tail -n 1 | awk '{print $4}')
     PORT=$(kubectl get routes $COMPONENT_NAME -o jsonpath="{.spec.host}")
     echo $PORT
 }
