@@ -1,6 +1,6 @@
-name: odoExtension
-version: 0.4.0
-description: odo extension for Codewind
-projectType: odo
+name: odoDevfileExtension
+version: 0.1.0
+description: odo devfile extension for Codewind
+projectType: odo-devfile
 commands: []
 detection: .odo

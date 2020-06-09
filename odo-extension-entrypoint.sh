@@ -81,7 +81,11 @@ function create() {
 
 	$util updateBuildState $PROJECT_ID $BUILD_STATE_INPROGRESS $BUILD_URL_INPROGRESS_MSG |& tee -a $ODO_DEBUG_LOG
 	echo -e "\nStep 4 of 5:" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
-	$odoUtil updateCodewindLinkEnvs $ROOT
+
+	# The commands for project linking don't work in experimental mode so disable project links
+	echo "- Project link disabled for odo experimental - skipping" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+	# $odoUtil updateCodewindLinkEnvs $ROOT
+
 	if [ $? -ne 0 ]; then
 		$util updateBuildState $PROJECT_ID $BUILD_STATE_FAILED $BUILD_URL_FAIL_MSG |& tee -a $ODO_DEBUG_LOG
 		exit 3
@@ -155,7 +159,11 @@ function update() {
 
 	$util updateBuildState $PROJECT_ID $BUILD_STATE_INPROGRESS $BUILD_URL_INPROGRESS_MSG |& tee -a $ODO_DEBUG_LOG
 	echo -e "\nStep 1 of 2, Updating Codewind links:" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
-	$odoUtil updateCodewindLinkEnvs $ROOT
+
+	# The commands for project linking don't work in experimental mode so disable project links
+	echo "- Project link disabled for odo experimental - skipping" |& tee -a $ODO_BUILD_LOG $ODO_DEBUG_LOG
+	# $odoUtil updateCodewindLinkEnvs $ROOT
+
 	if [ $? -ne 0 ]; then
 		$util updateBuildState $PROJECT_ID $BUILD_STATE_FAILED $BUILD_URL_FAIL_MSG |& tee -a $ODO_DEBUG_LOG
 		exit 3
@@ -214,11 +222,11 @@ elif [ "$COMMAND" == "getAppName" ]; then
 
 # Get port
 elif [ "$COMMAND" == "getPort" ]; then
-	PORT=$($odoUtil getPort)
+	PORT=$($odoUtil getPort $COMPONENT_NAME)
 	echo $PORT
 
 # Get URL
 elif [ "$COMMAND" == "getURL" ]; then
-	URL=$($odoUtil getURL)
+	URL=$($odoUtil getURL $COMPONENT_NAME)
 	echo $URL
 fi

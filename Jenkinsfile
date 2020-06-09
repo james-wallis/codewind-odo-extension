@@ -2,9 +2,9 @@
 
 pipeline {
     agent any
-    
+
     options {
-        timestamps() 
+        timestamps()
         skipStagesAfterUnstable()
     }
 
@@ -15,6 +15,8 @@ pipeline {
                     export REPO_NAME="codewind-odo-extension"
                     if [ $GIT_BRANCH == "master" ]; then
                         VERSION="9.9.9999"
+                    elif [ $GIT_BRANCH == "master-devfile" ]; then
+                        VERSION="devfile-9.9.9999"
                     else
                         VERSION="$GIT_BRANCH"
                     fi
@@ -22,7 +24,7 @@ pipeline {
                     export OUTPUT_NAME="$REPO_NAME-$VERSION"
 
                     echo "Building codewind odo extension zip file"
-                    rm -rf .git .github .gitignore Jenkinsfile
+                    rm -rf .git .github .gitignore Jenkinsfile createMasterIndex.js
                     rm -rf bin
                     mkdir -p bin
                     curl -Lo ./bin/odo https://mirror.openshift.com/pub/openshift-v4/clients/odo/latest/odo-linux-amd64
@@ -34,8 +36,8 @@ pipeline {
                     echo "Built codewind odo extension zip file"
                 '''
             }
-        } 
-        
+        }
+
         stage('Deploy') {
             // This when clause disables PR build uploads; you may comment this out if you want your build uploaded.
             when {
@@ -51,6 +53,8 @@ pipeline {
                         export REPO_NAME="codewind-odo-extension"
                         if [ $GIT_BRANCH == "master" ]; then
                             VERSION="9.9.9999"
+                        elif [ $GIT_BRANCH == "master-devfile" ]; then
+                            VERSION="devfile-9.9.9999"
                         else
                             VERSION="$GIT_BRANCH"
                         fi
@@ -88,5 +92,5 @@ pipeline {
                 }
             }
         }
-    }   
+    }
 }
