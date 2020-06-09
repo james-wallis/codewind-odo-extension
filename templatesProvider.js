@@ -31,54 +31,44 @@ const ODO_SET_EXPERIMENTAL_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/od
 
 module.exports = {
     getRepositories: async function() {
-        try {
-            // Enable ODO experimental
-            await execAsync(ODO_SET_EXPERIMENTAL_COMMAND);
+        // Enable ODO experimental
+        await execAsync(ODO_SET_EXPERIMENTAL_COMMAND);
 
-            // Read master-index.json of currently defined templates for OpenShift
-            const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
-            const masterjson = JSON.parse(data);
-            await writeFileAsync(RECONCILED_INDEX_JSON_FILE, JSON.stringify(masterjson, null, 4), 'utf8');
+        // Read master-index.json of currently defined templates for OpenShift
+        const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
+        const masterjson = JSON.parse(data);
+        await writeFileAsync(RECONCILED_INDEX_JSON_FILE, JSON.stringify(masterjson, null, 4), 'utf8');
 
-            // Return a link to the updated index.json index
-            const repos = [{
-                name: 'OpenShift Devfile templates',
-                description: 'The set of templates for new OpenShift Devfile projects in Codewind.',
-                url: JSON_FILE_URL,
-                projectStyles: ['OpenShift Devfiles'],
-            }];
-            return repos;
-        } catch(err) {
-            console.log('Error fetching ODO devfile repositories');
-            console.log(err);
-        }
+        // Return a link to the updated index.json index
+        const repos = [{
+            name: 'OpenShift Devfile templates',
+            description: 'The set of templates for new OpenShift Devfile projects in Codewind.',
+            url: JSON_FILE_URL,
+            projectStyles: ['OpenShift Devfiles'],
+        }];
+        return repos;
     },
 
     getProjectTypes: async function() {
-        try {
-            const projectTypes = [];
-            // Read master-index.json of currently defined templates for OpenShift
-            const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
-            const masterjson = JSON.parse(data);
+        const projectTypes = [];
+        // Read master-index.json of currently defined templates for OpenShift
+        const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
+        const masterjson = JSON.parse(data);
 
-            // Loop through current list of templates in master index.json and add any language
-            // that in component list returned by odo command
-            // note: the master index.json is assumed to use same keywords for 'language' as odo uses for component 'name'
-            const projectTypes = masterjson.map(({ language, description }) => ({
-                projectType: 'odo',
-                projectSubtypes: {
-                    label: 'OpenShift component',
-                    items: [{
-                        id: `OpenShift/${language}`,
-                        label: `OpenShift ${language}`,
-                        description,
-                    }]
-                }
-            }));
-            return projectTypes;
-        } catch(err) {
-            console.log('Error fetching ODO devfile projectTypes');
-            console.log(err);
-        }
+        // Loop through current list of templates in master index.json and add any language
+        // that in component list returned by odo command
+        // note: the master index.json is assumed to use same keywords for 'language' as odo uses for component 'name'
+        const projectTypes = masterjson.map(({ language, description }) => ({
+            projectType: 'odo',
+            projectSubtypes: {
+                label: 'OpenShift component',
+                items: [{
+                    id: `OpenShift/${language}`,
+                    label: `OpenShift ${language}`,
+                    description,
+                }]
+            }
+        }));
+        return projectTypes;
     }
 }
