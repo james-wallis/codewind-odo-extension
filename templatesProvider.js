@@ -27,12 +27,13 @@ const RECONCILED_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/template
 const JSON_FILE_URL = 'file://' + RECONCILED_INDEX_JSON_FILE;
 const ODO_CATALOG_LIST_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo catalog list components -o json';
 const ODO_SET_EXPERIMENTAL_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo preference set experimental true -f';
+const DEVFILE_PREFERENCE = '/root/.odo/devfile-preference.yaml';
 
 
 module.exports = {
     getRepositories: async function() {
         // Enable ODO experimental
-        await execAsync(ODO_SET_EXPERIMENTAL_COMMAND);
+        await execAsync(ODO_SET_EXPERIMENTAL_COMMAND, { env: { 'GLOBALODOCONFIG': DEVFILE_PREFERENCE }});
 
         // Read master-index.json of currently defined templates for OpenShift
         const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
