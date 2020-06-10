@@ -28,11 +28,21 @@ pipeline {
                     rm -rf bin
                     mkdir -p bin
                     curl -Lo ./bin/odo https://mirror.openshift.com/pub/openshift-v4/clients/odo/latest/odo-linux-amd64
+                    if [ $? -ne 0 ]; then
+                        echo "Error downloading odo binary"
+                        exit 1
+                    fi
+
                     chmod +x ./bin/odo
                     mkdir -p $OUTPUT_NAME
                     # Move all files except output folder to output folder, suppress error of moving output folder to itself
                     mv * .* $OUTPUT_NAME 2>/dev/null
                     zip $OUTPUT_NAME.zip -9 -r $OUTPUT_NAME
+                    if [ $? -ne 0 ]; then
+                        echo "Error zipping odo extension"
+                        exit 1
+                    fi
+
                     echo "Built codewind odo extension zip file"
                 '''
             }
