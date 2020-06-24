@@ -47,10 +47,10 @@ module.exports = {
 
         // Return a link to the updated index.json index
         const repos = [{
-            name: 'OpenShift Devfile templates',
-            description: 'The set of templates for new OpenShift Devfile projects in Codewind.',
+            name: 'OpenShift templates',
+            description: 'The set of templates for new OpenShift projects in Codewind.',
             url: JSON_FILE_URL,
-            projectStyles: ['OpenShift Devfiles'],
+            projectStyles: ['OpenShift'],
         }];
         return repos;
     },
