@@ -13,32 +13,33 @@
 
 'use strict';
 
-const { exec } = require('child_process');
 const { promisify } = require('util');
-const { readFile, writeFile } = require('fs');
+const { readFile } = require('fs');
 
-const execAsync = promisify(exec);
+const { readJSON, runOdoCommand, writeJSON, fetchOdoComponentTemplates } = require('./utils');
+
 const readFileAsync = promisify(readFile);
-const writeFileAsync = promisify(writeFile);
 
-const CODEWIND_ODO_EXTENSION_BASE_PATH = '/codewind-workspace/.extensions/codewind-odo-extension-devfile';
+const DEVELOPMENT = process.env.NODE_ENV === 'test';
+
+const CODEWIND_ODO_EXTENSION_BASE_PATH = (DEVELOPMENT) ? '.'  : '/codewind-workspace/.extensions/codewind-odo-extension-devfile';
 const MASTER_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/templates/master-index.json';
 const RECONCILED_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/templates/index.json';
 const JSON_FILE_URL = 'file://' + RECONCILED_INDEX_JSON_FILE;
-const ODO_CATALOG_LIST_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo catalog list components -o json';
-const ODO_SET_EXPERIMENTAL_COMMAND = CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo preference set experimental true -f';
-const DEVFILE_PREFERENCE = '/root/.odo/devfile-preference.yaml';
+const ODO_LOCATION = (DEVELOPMENT) ? 'odo' : CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo';
+const ODO_CATALOG_LIST_COMMAND = ODO_LOCATION + ' catalog list components -o json';
+const ODO_SET_EXPERIMENTAL_COMMAND = ODO_LOCATION + ' preference set experimental true -f';
+const ODO_PREFERENCE_DIR = (DEVELOPMENT) ? `${process.env.HOME}/.odo` : '/root/.odo'
+const DEVFILE_PREFERENCE = ODO_PREFERENCE_DIR + '/devfile-preference.yaml';
 
 
 module.exports = {
     getRepositories: async function() {
         // Enable ODO experimental
-        await execAsync(ODO_SET_EXPERIMENTAL_COMMAND, { env: { 'GLOBALODOCONFIG': DEVFILE_PREFERENCE }});
+        await runOdoCommand(ODO_SET_EXPERIMENTAL_COMMAND, DEVFILE_PREFERENCE);
 
-        // Read master-index.json of currently defined templates for OpenShift
-        const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
-        const masterjson = JSON.parse(data);
-        await writeFileAsync(RECONCILED_INDEX_JSON_FILE, JSON.stringify(masterjson, null, 4), 'utf8');
+        const odoTemplates = await fetchOdoComponentTemplates(ODO_CATALOG_LIST_COMMAND, DEVFILE_PREFERENCE);
+        await writeJSON(RECONCILED_INDEX_JSON_FILE, odoTemplates);
 
         // Return a link to the updated index.json index
         const repos = [{
@@ -51,20 +52,19 @@ module.exports = {
     },
 
     getProjectTypes: async function() {
-        const projectTypes = [];
         // Read master-index.json of currently defined templates for OpenShift
-        const data = await readFileAsync(MASTER_INDEX_JSON_FILE, 'utf8');
+        const data = await readFileAsync(RECONCILED_INDEX_JSON_FILE, 'utf8');
         const masterjson = JSON.parse(data);
 
         // Loop through current list of templates in master index.json
         // note: the master index.json is assumed to use same keywords for 'language' as odo uses for component 'name'
         const projectTypes = masterjson.map(({ language, description }) => ({
-            projectType: 'odo',
+            projectType: 'odo-devfile',
             projectSubtypes: {
-                label: 'OpenShift component',
+                label: 'OpenShift Devfile component',
                 items: [{
-                    id: `OpenShift/${language}`,
-                    label: `OpenShift ${language}`,
+                    id: `OpenShiftDevfile/${language}`,
+                    label: `OpenShift Devfile ${language}`,
                     description,
                 }]
             }
