@@ -27,7 +27,6 @@ const MASTER_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/templates/ma
 const RECONCILED_INDEX_JSON_FILE = CODEWIND_ODO_EXTENSION_BASE_PATH + '/templates/index.json';
 const JSON_FILE_URL = 'file://' + RECONCILED_INDEX_JSON_FILE;
 const ODO_LOCATION = (DEVELOPMENT) ? 'odo' : CODEWIND_ODO_EXTENSION_BASE_PATH + '/bin/odo';
-const ODO_CATALOG_LIST_COMMAND = ODO_LOCATION + ' catalog list components -o json';
 const ODO_SET_EXPERIMENTAL_COMMAND = ODO_LOCATION + ' preference set experimental true -f';
 const ODO_PREFERENCE_DIR = (DEVELOPMENT) ? `${process.env.HOME}/.odo` : '/root/.odo'
 const DEVFILE_PREFERENCE = ODO_PREFERENCE_DIR + '/devfile-preference.yaml';
@@ -38,7 +37,7 @@ module.exports = {
         // Enable ODO experimental
         await runOdoCommand(ODO_SET_EXPERIMENTAL_COMMAND, DEVFILE_PREFERENCE);
 
-        const odoTemplates = await fetchOdoComponentTemplates(ODO_CATALOG_LIST_COMMAND, DEVFILE_PREFERENCE);
+        const odoTemplates = await fetchOdoComponentTemplates(ODO_LOCATION, DEVFILE_PREFERENCE);
         await writeJSON(RECONCILED_INDEX_JSON_FILE, odoTemplates);
 
         // Return a link to the updated index.json index
