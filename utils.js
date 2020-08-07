@@ -60,13 +60,11 @@ async function convertDevfilesToTemplates(devfiles, odoLocation, odoPreferenceLo
 
 async function createTemplateFromDevfile(devfile, odoLocation, odoPreferenceLocation) {
   const { Name, DisplayName, Description, Link: path, Registry: { URL: host } } = devfile;
-  const gitLocation = await getLocationFromDescribeComponent(odoLocation, odoPreferenceLocation, Name);
+  const location = await getLocationFromDescribeComponent(odoLocation, odoPreferenceLocation, Name);
 
-  if (!gitLocation) {
+  if (!location) {
     return null;
   }
-
-  const location = (gitLocation.endsWith('.git')) ? gitLocation.slice(0, gitLocation.length - 4) : gitLocation;
 
   const template = {
     displayName: `OpenShift Devfiles ${DisplayName}`,
@@ -89,10 +87,23 @@ async function getLocationFromDescribeComponent(odoLocation, odoPreferenceLocati
   }
 
   for (const project of Data.projects) {
-    if (project.git && project.git.location) {
-      return project.git.location;
+    if (project.git) {
+      const location = validateGitLocation(project.git);
+      if (location) {
+        return location;
+      }
     }
   }
+}
+
+async function validateGitLocation({ location, sparseCheckoutDir }) {
+  // sparseCheckoutDir is unsupported at the moment
+  // When it is supported we can append it to the location below
+  if (!location || sparseCheckoutDir && sparseCheckoutDir !== "") {
+    return null;
+  }
+  const nl = (location.endsWith('.git')) ? location.slice(0, location.length - 4) : location;
+  return nl;
 }
 
 module.exports = {
