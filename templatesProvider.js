@@ -35,7 +35,7 @@ module.exports = {
 
         // Get the current list of components from the ODO command
         const { stdout } = await execAsync(ODO_CATALOG_LIST_COMMAND);
-        const { items } = JSON.parse(stdout);
+        const { s2iItems: items } = JSON.parse(stdout);
         const odocomponents = items.map(({ metadata: { name }}) => name);
 
         // Loop through current list of templates in master index.json and delete any language
