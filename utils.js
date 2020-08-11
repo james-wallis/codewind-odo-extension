@@ -60,7 +60,7 @@ async function convertDevfilesToTemplates(devfiles, odoLocation, odoPreferenceLo
 
 async function createTemplateFromDevfile(devfile, odoLocation, odoPreferenceLocation) {
   const { Name, DisplayName, Description, Link: path, Registry: { URL: host } } = devfile;
-  const location = await getLocationFromDescribeComponent(odoLocation, odoPreferenceLocation, Name);
+  const { location, sparseCheckoutDir } = await getLocationFromDescribeComponent(odoLocation, odoPreferenceLocation, Name);
 
   if (!location) {
     return null;
@@ -69,10 +69,11 @@ async function createTemplateFromDevfile(devfile, odoLocation, odoPreferenceLoca
   const template = {
     displayName: `OpenShift Devfiles ${DisplayName}`,
     description: Description,
-    language: Name, // Devfile Name is near enough to a language
+    language: Name, // Devfile Name is used for language when creating a component
     projectType: 'odo-devfile',
     projectStyle: 'OpenShift Devfiles',
     location,
+    subDirectory: sparseCheckoutDir || "",
   }
 
   return template;
@@ -83,27 +84,25 @@ async function getLocationFromDescribeComponent(odoLocation, odoPreferenceLocati
   const { stdout } = await runOdoCommand(odoCommand, odoPreferenceLocation);
   const { Data } = JSON.parse(stdout);
   if (!Data.projects || Data.projects.length === 0) {
-    return null;
+    return { location: false, sparseCheckoutDir: "" };
   }
 
   for (const project of Data.projects) {
     if (project.git) {
       const location = validateGitLocation(project.git);
       if (location) {
-        return location;
+        const { sparseCheckoutDir } = project.git;
+        return { location, sparseCheckoutDir };
       }
     }
   }
 }
 
-async function validateGitLocation({ location, sparseCheckoutDir }) {
-  // sparseCheckoutDir is unsupported at the moment
-  // When it is supported we can append it to the location below
-  if (!location || sparseCheckoutDir && sparseCheckoutDir !== "") {
+function validateGitLocation({ location }) {
+  if (!location) {
     return null;
   }
-  const nl = (location.endsWith('.git')) ? location.slice(0, location.length - 4) : location;
-  return nl;
+  return (location.endsWith('.git')) ? location.slice(0, location.length - 4) : location;
 }
 
 module.exports = {
